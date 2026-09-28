@@ -25,15 +25,22 @@ logs/
 # Checkpoints and downloads
 checkpoints/
 downloads/
+client_delivery/
 
-# Credentials and config
+# Credentials and config (keep real files local; commit *.example.yaml only)
 config/credentials.yaml
 config/settings.yaml
 config/*.yaml
+!config/*.example.yaml
 
-# Patient lists / PHI
+# Patient lists / PHI / delivery packages
 *Patients.csv
+*Patient List.csv
+*Patients List.csv
 Facility*.csv
+*Exported Files/
+*Exported Files.zip
+*.zip
 
 # Jupyter Notebooks
 *.ipynb

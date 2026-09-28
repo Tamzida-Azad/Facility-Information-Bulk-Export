@@ -9,6 +9,7 @@ import yaml
 from html.parser import HTMLParser
 from html import unescape
 from appointment_selectors import EXPORT_BUTTON, EMPTY_TABLE_CELL, DATATABLES_INFO
+from page_wait import goto_ready
 
 
 def load_settings():
@@ -169,9 +170,11 @@ async def download_appointment_history(page, download_dir, patient_id, patient_n
     print(f"[APPOINTMENT] Navigating to: {list_page_url}")
 
     try:
-        await page.goto(list_page_url, timeout=page_timeout)
-        await page.wait_for_load_state('networkidle')
-        await asyncio.sleep(1)
+        await goto_ready(
+            page, list_page_url,
+            f"{EXPORT_BUTTON}, {EMPTY_TABLE_CELL}, {DATATABLES_INFO}",
+            timeout=page_timeout,
+        )
 
         if await _is_appointment_list_empty(page):
             print(f"[APPOINTMENT] No appointments for patient {patient_id} — skipping")
