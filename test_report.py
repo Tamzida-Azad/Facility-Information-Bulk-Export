@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-Test script to generate a sample report and show the improved timestamp visibility
+Test script to generate a sample report and show the improved timestamp visibility.
+Uses fictional placeholder data only (no real patient/facility PHI).
 """
 
 import sys
@@ -12,7 +13,7 @@ from report_generator import generate_execution_report
 def test_timestamp_visibility():
     """Generate a sample report to test timestamp visibility"""
     
-    # Sample data
+    # Fictional sample data only
     sample_data = {
         'facility_name': 'Example Clinic (Demo)',
         'total_patients': 5,
