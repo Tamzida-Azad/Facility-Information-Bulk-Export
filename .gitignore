@@ -27,10 +27,11 @@ checkpoints/
 downloads/
 client_delivery/
 
-# Credentials and config
+# Credentials and config (keep real files local; commit *.example.yaml only)
 config/credentials.yaml
 config/settings.yaml
 config/*.yaml
+!config/*.example.yaml
 
 # Patient lists / PHI / delivery packages
 *Patients.csv
