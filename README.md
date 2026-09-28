@@ -132,7 +132,16 @@ viewport:
   height: 973
 ```
 
-Place the patient list CSV at the project root (see `.gitignore` — patient lists are not committed).
+Place one or more patient-list CSV files in the **project root** (same folder as `README.md`). Each file must include `id`, `first_name`, and `last_name`.
+
+On startup the exporter:
+
+1. Scans the project root for valid patient CSVs (not inside `downloads/` or `config/`)
+2. Tells you which file(s) it found
+3. Selects one automatically:
+   - Only one CSV → uses that file
+   - Multiple CSVs → prefers a filename that contains the `facility` from `credentials.yaml`, otherwise the most recently modified
+4. Writes exports under `downloads/<Facility Name>/`
 
 ## Run
 
@@ -140,7 +149,19 @@ Place the patient list CSV at the project root (see `.gitignore` — patient lis
 python src/main.py
 ```
 
-Patients already fully exported (required document folders populated) are skipped unless newer records are detected.
+Patients already fully exported (required document folders populated) are skipped unless newer records are detected. Incomplete patients are always finished before new ones (Phase 1 → Phase 2).
+
+### Unattended overnight runs (auto-restart)
+
+For long facility exports, use the supervisor so MemoryError / dead Playwright browsers trigger an automatic restart with fewer workers (5 → 3 → 2), always resuming incomplete folders first:
+
+```bash
+python src/watch_export.py
+# or pin a log file:
+python src/watch_export.py --log export.log
+```
+
+Supervisor settings live under `supervisor:` in `config/settings.yaml`. State is stored at `downloads/export_supervisor_state.json`.
 
 ## Notes
 

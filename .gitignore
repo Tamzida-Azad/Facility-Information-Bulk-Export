@@ -25,15 +25,21 @@ logs/
 # Checkpoints and downloads
 checkpoints/
 downloads/
+client_delivery/
 
 # Credentials and config
 config/credentials.yaml
 config/settings.yaml
 config/*.yaml
 
-# Patient lists / PHI
+# Patient lists / PHI / delivery packages
 *Patients.csv
+*Patient List.csv
+*Patients List.csv
 Facility*.csv
+*Exported Files/
+*Exported Files.zip
+*.zip
 
 # Jupyter Notebooks
 *.ipynb
