@@ -16,6 +16,7 @@ from credits_selectors import (
     DATATABLES_EMPTY,
     NO_RESULTS_TEXT,
 )
+from page_wait import goto_ready
 
 
 def load_settings():
@@ -160,8 +161,7 @@ async def _collect_column_all_pages(page, header_name, page_timeout):
 
         try:
             await next_btn.click()
-            await page.wait_for_load_state("networkidle")
-            await asyncio.sleep(0.5)
+            await page.wait_for_load_state("domcontentloaded")
         except Exception:
             break
 
@@ -170,9 +170,7 @@ async def _collect_column_all_pages(page, header_name, page_timeout):
 
 async def _goto(page, url, page_timeout):
     print(f"[CREDITS] Navigating to: {url}")
-    await page.goto(url, timeout=page_timeout)
-    await page.wait_for_load_state("networkidle")
-    await asyncio.sleep(1)
+    await goto_ready(page, url, PAGE_CONTENT, timeout=page_timeout)
 
 
 async def download_all_credits(page, download_dir, patient_id, patient_name):

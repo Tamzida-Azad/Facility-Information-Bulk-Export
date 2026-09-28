@@ -2,6 +2,7 @@
 """
 Standalone Report Generator Test
 Generates a sample HTML report to test the report functionality independently.
+Uses fictional placeholder data only (no real patient/facility PHI).
 """
 
 import os
@@ -15,7 +16,7 @@ def main():
     
     print("🔄 Generating test EMR export report...")
     
-    # Sample test data - mimics real execution results
+    # Fictional sample data only
     test_data = {
         'facility_name': 'Example Clinic (Demo)',
         'total_patients': 8,

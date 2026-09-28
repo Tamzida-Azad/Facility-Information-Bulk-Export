@@ -14,6 +14,7 @@ from sms_log_selectors import (
     MESSAGE_TIME,
     SMS_LOG_COLUMNS,
 )
+from page_wait import goto_ready
 
 
 def load_settings():
@@ -157,9 +158,7 @@ async def download_sms_log(page, download_dir, patient_id, patient_name):
 
     print(f"[SMS] Navigating to: {url}")
     try:
-        await page.goto(url, timeout=page_timeout)
-        await page.wait_for_load_state("networkidle")
-        await asyncio.sleep(1)
+        await goto_ready(page, url, CHAT_CONTAINER, timeout=page_timeout)
 
         await _scroll_chat_to_load_all(page)
 

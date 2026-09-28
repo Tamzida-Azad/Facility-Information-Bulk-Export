@@ -10,6 +10,7 @@ from service_history_selectors import (
     NEXT_BUTTON,
     DATATABLES_EMPTY,
 )
+from page_wait import goto_ready
 
 # UI placeholders that mean "no real value"
 BLANK_PLACEHOLDERS = {
@@ -146,8 +147,7 @@ async def _collect_all_service_rows(page):
         next_btn = await page.query_selector(NEXT_BUTTON)
         try:
             await next_btn.click()
-            await page.wait_for_load_state("networkidle")
-            await asyncio.sleep(0.5)
+            await page.wait_for_load_state("domcontentloaded")
         except Exception:
             break
 
@@ -170,9 +170,11 @@ async def download_service_history(page, download_dir, patient_id, patient_name)
 
     print(f"[SERVICE] Navigating to: {url}")
     try:
-        await page.goto(url, timeout=page_timeout)
-        await page.wait_for_load_state("networkidle")
-        await asyncio.sleep(1)
+        await goto_ready(
+            page, url,
+            f"table, {DATATABLES_EMPTY}",
+            timeout=page_timeout,
+        )
 
         rows = await _collect_all_service_rows(page)
 

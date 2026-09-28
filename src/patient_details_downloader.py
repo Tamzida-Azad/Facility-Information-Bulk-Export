@@ -5,6 +5,7 @@ import csv
 import asyncio
 import yaml
 from patient_details_selectors import PATIENT_DETAILS_URL, PATIENT_DETAIL_FIELDS
+from page_wait import goto_ready
 
 
 def load_settings():
@@ -78,47 +79,56 @@ async def download_patient_details(page, download_dir, patient_id, patient_name)
     url = PATIENT_DETAILS_URL.format(patient_id=patient_id)
 
     print(f"[DETAILS] Navigating to: {url}")
-    try:
-        await page.goto(url, timeout=page_timeout)
-        await page.wait_for_load_state("networkidle")
-        await asyncio.sleep(1)
+    last_error = None
+    for attempt in range(1, 3):
+        try:
+            await goto_ready(page, url, "h6", timeout=page_timeout, ready_timeout=min(page_timeout, 20000))
+            if not await page.query_selector("h6"):
+                print(f"[DETAILS] h6 headings not found quickly on attempt {attempt}; scraping page anyway")
 
-        scraped = await _extract_detail_fields(page) or {}
+            scraped = await _extract_detail_fields(page) or {}
+            # If nothing scraped, retry once more before writing an all-N/A row
+            if attempt == 1 and not any((v or "").strip() for v in scraped.values()):
+                raise Exception("No patient detail fields found on page")
 
-        # Fallback: locate referral join URL anywhere on the page if needed
-        referral = scraped.get("Referral Code", "")
-        if (
-            not referral
-            or "send-referral" in referral.lower()
-            or "sms-details" in referral.lower()
-            or "send sms" in referral.lower()
-            or "send e-mail" in referral.lower()
-            or "send email" in referral.lower()
-        ):
-            join_url = await page.evaluate(
-                r"""() => {
-                  const body = document.body.innerText || '';
-                  const m = body.match(/https?:\/\/[^\s]*patients\/join\/[A-Za-z0-9]+/i);
-                  return m ? m[0] : '';
-                }"""
-            )
-            if join_url:
-                scraped["Referral Code"] = join_url
+            # Fallback: locate referral join URL anywhere on the page if needed
+            referral = scraped.get("Referral Code", "")
+            if (
+                not referral
+                or "send-referral" in referral.lower()
+                or "sms-details" in referral.lower()
+                or "send sms" in referral.lower()
+                or "send e-mail" in referral.lower()
+                or "send email" in referral.lower()
+            ):
+                join_url = await page.evaluate(
+                    r"""() => {
+                      const body = document.body.innerText || '';
+                      const m = body.match(/https?:\/\/[^\s]*patients\/join\/[A-Za-z0-9]+/i);
+                      return m ? m[0] : '';
+                    }"""
+                )
+                if join_url:
+                    scraped["Referral Code"] = join_url
 
-        row = {field: cell_or_na(scraped.get(field)) for field in PATIENT_DETAIL_FIELDS}
+            row = {field: cell_or_na(scraped.get(field)) for field in PATIENT_DETAIL_FIELDS}
 
-        os.makedirs(download_dir, exist_ok=True)
-        filename = f"{patient_name}_details.csv"
-        save_path = os.path.join(download_dir, filename)
+            os.makedirs(download_dir, exist_ok=True)
+            filename = f"{patient_name}_details.csv"
+            save_path = os.path.join(download_dir, filename)
 
-        with open(save_path, "w", newline="", encoding="utf-8") as f:
-            writer = csv.DictWriter(f, fieldnames=PATIENT_DETAIL_FIELDS)
-            writer.writeheader()
-            writer.writerow(row)
+            with open(save_path, "w", newline="", encoding="utf-8") as f:
+                writer = csv.DictWriter(f, fieldnames=PATIENT_DETAIL_FIELDS)
+                writer.writeheader()
+                writer.writerow(row)
 
-        print(f"[DETAILS] Wrote {filename}")
-        return 1
+            print(f"[DETAILS] Wrote {filename}")
+            return 1
 
-    except Exception as e:
-        print(f"[DETAILS] Error collecting patient details for {patient_id}: {e}")
-        return 0
+        except Exception as e:
+            last_error = e
+            print(f"[DETAILS] Attempt {attempt}/2 failed for {patient_id}: {e}")
+            await asyncio.sleep(1)
+
+    print(f"[DETAILS] Error collecting patient details for {patient_id}: {last_error}")
+    return 0
