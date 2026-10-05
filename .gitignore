@@ -33,14 +33,19 @@ config/settings.yaml
 config/*.yaml
 !config/*.example.yaml
 
-# Patient lists / PHI / delivery packages
+# Customer / company lists and delivery packages (keep exports local)
 *Patients.csv
 *Patient List.csv
 *Patients List.csv
+*Customers.csv
+*Customer List.csv
 Facility*.csv
+Company*.csv
 *Exported Files/
 *Exported Files.zip
 *.zip
+*.csv
+!requirements.txt
 
 # Jupyter Notebooks
 *.ipynb
