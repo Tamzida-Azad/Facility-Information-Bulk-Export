@@ -3,18 +3,18 @@
 
 browser_mode: headless   # or headed for debugging
 page_timeout: 60000
-base_url: https://www.calystaproemr.com
+base_url: https://www.example-portal.com
 viewport:
   width: 1725
   height: 973
 
-# Parallel browsers (each logs in and processes a patient shard)
+# Parallel browsers (each logs in and processes a customer shard)
 worker_count: 5
-# Rows per list page (?count=) for images / encounters / consents / invoices
+# Rows per list page (?count=) for image / document / invoice lists
 per_page: 50
 # Stagger worker logins to reduce portal contention (seconds * worker_index)
 worker_login_stagger_sec: 2
-# Recycle each worker browser every N processed patients (0 = never). Helps RAM.
+# Recycle each worker browser every N processed customers (0 = never). Helps RAM.
 recycle_browser_every_n_patients: 40
 
 # Unattended supervisor (python src/watch_export.py)
@@ -29,5 +29,5 @@ supervisor:
   max_restarts: 200
   restart_cooldown_sec: 30
 
-# Resume from this patient id (leave empty or remove to start from beginning)
+# Resume from this customer id (leave empty or remove to start from beginning)
 # start_from_patient_id: ""
